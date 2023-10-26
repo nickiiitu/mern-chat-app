@@ -17,7 +17,6 @@ const MyChats = ({ fetchAgain }) => {
   const toast = useToast();
 
   const fetchChats = async () => {
-    // console.log(user._id);
     try {
       const config = {
         headers: {
@@ -90,13 +89,13 @@ const MyChats = ({ fetchAgain }) => {
         {chats ? (
           <Stack overflowY="scroll">
             {chats.map((chat) => {
-              const rec =
-                chat?.users[0]?.pic === user.pic
-                  ? chat?.users[1]
-                  : chat?.users[0];
-              const recImg =
-                chat.isGroupChat && chat?.groupIcon ? chat.groupIcon : rec.pic;
-              const isActive = activeUsers.includes(rec._id);
+              const rec = chat.isGroupChat
+                ? ""
+                : chat?.users[0]?.pic === user.pic
+                ? chat?.users[1]
+                : chat?.users[0];
+              const recImg = chat.isGroupChat ? chat.groupIcon : rec?.pic;
+              const isActive = activeUsers.includes(rec?._id);
               return (
                 <Flex
                   onClick={() => setSelectedChat(chat)}
@@ -112,11 +111,7 @@ const MyChats = ({ fetchAgain }) => {
                       size="md"
                       cursor="pointer"
                       name={user.name}
-                      src={
-                        chat.isGroupChat && chat?.groupIcon
-                          ? chat.groupIcon
-                          : recImg
-                      }
+                      src={chat.isGroupChat ? chat.groupIcon : recImg}
                       border={"2px"}
                       borderColor={
                         isActive

@@ -96,8 +96,6 @@ function SideDrawer() {
   };
 
   const accessChat = async (userId) => {
-    console.log(userId);
-
     try {
       setLoadingChat(true);
       const config = {
@@ -123,7 +121,6 @@ function SideDrawer() {
       });
     }
   };
-  console.log(searchResult);
   return (
     <>
       <Box

@@ -61,7 +61,7 @@ redisConnect();
 
 //socket
 const io = require("socket.io")(server, {
-  pingTimeout: 60000,
+  // pingTimeout: 60000,
   cors: {
     origin: "http://localhost:3000",
     // credentials: true,
@@ -79,7 +79,7 @@ io.on("connection", (socket) => {
       array = [...result, userData._id];
     }
     console.log(array, "setup");
-    socket.emit("connected", array);
+    io.emit("connected", array);
   });
 
   socket.on("join chat", (room) => {
@@ -106,6 +106,6 @@ io.on("connection", (socket) => {
     await client.lRem("activeUsers", 1, userData._id);
     const result = await client.lRange("activeUsers", 0, -1);
     console.log(result, "leave");
-    socket.emit("connected", result);
+    io.emit("connected", result);
   });
 });
