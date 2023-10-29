@@ -11,7 +11,6 @@ import { ChatState } from "../Context/ChatProvider";
 
 const ScrollableChat = ({ messages }) => {
   const { user } = ChatState();
-
   return (
     <ScrollableFeed>
       {messages &&
@@ -30,20 +29,34 @@ const ScrollableChat = ({ messages }) => {
                 />
               </Tooltip>
             )}
-            <span
-              style={{
-                backgroundColor: `${
-                  m.sender._id === user._id ? "#BEE3F8" : "#B9F5D0"
-                }`,
-                marginLeft: isSameSenderMargin(messages, m, i, user._id),
-                marginTop: isSameUser(messages, m, i, user._id) ? 3 : 10,
-                borderRadius: "20px",
-                padding: "5px 15px",
-                maxWidth: "75%",
-              }}
-            >
-              {m.content}
-            </span>
+            {!m.contentType || m.contentType === "message" ? (
+              <span
+                style={{
+                  backgroundColor: `${
+                    m.sender._id === user._id ? "#BEE3F8" : "#B9F5D0"
+                  }`,
+                  marginLeft: isSameSenderMargin(messages, m, i, user._id),
+                  marginTop: isSameUser(messages, m, i, user._id) ? 3 : 10,
+                  borderRadius: "20px",
+                  padding: "5px 15px",
+                  maxWidth: "75%",
+                }}
+              >
+                {m.content}
+              </span>
+            ) : (
+              <img
+                style={{
+                  marginLeft: isSameSenderMargin(messages, m, i, user._id),
+                  marginTop: isSameUser(messages, m, i, user._id) ? 3 : 10,
+                  borderRadius: "20px",
+                  padding: "5px 0px",
+                  maxWidth: "75%",
+                }}
+                src={m.content}
+                alt="image"
+              />
+            )}
           </div>
         ))}
     </ScrollableFeed>

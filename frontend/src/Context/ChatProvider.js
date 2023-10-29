@@ -38,6 +38,7 @@ const ChatProvider = ({ children }) => {
         setChats,
         activeUsers,
         setActiveUsers,
+        io,
       }}
     >
       {children}

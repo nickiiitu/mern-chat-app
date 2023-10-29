@@ -43,7 +43,6 @@ const MyChats = ({ fetchAgain }) => {
     fetchChats();
     // eslint-disable-next-line
   }, [fetchAgain]);
-  console.log(activeUsers, "activ");
   return (
     <Box
       d={{ base: selectedChat ? "none" : "flex", md: "flex" }}
@@ -105,6 +104,7 @@ const MyChats = ({ fetchAgain }) => {
                   px={3}
                   py={2}
                   borderRadius="lg"
+                  key={chat._id}
                 >
                   <Box w="25%">
                     <Avatar
@@ -131,8 +131,10 @@ const MyChats = ({ fetchAgain }) => {
                     {chat.latestMessage && (
                       <Text fontSize="xs">
                         <b>{chat.latestMessage.sender.name} : </b>
-                        {chat.latestMessage.content.length > 50
-                          ? chat.latestMessage.content.substring(0, 51) + "..."
+                        {chat?.latestMessage?.contentType === "img"
+                          ? "img"
+                          : chat?.latestMessage?.content?.length > 50
+                          ? chat?.latestMessage.content.substring(0, 51) + "..."
                           : chat.latestMessage.content}
                       </Text>
                     )}

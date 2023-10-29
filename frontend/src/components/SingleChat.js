@@ -11,8 +11,8 @@ import ProfileModal from "./miscellaneous/ProfileModal";
 import ScrollableChat from "./ScrollableChat";
 import Lottie from "react-lottie";
 import animationData from "../animations/typing.json";
-
-// import io from "socket.io-client";
+import imageUploadIcon from "../image_upload_icon.png";
+import sendMessageIcon from "../sendMessage.png";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import { ChatState } from "../Context/ChatProvider";
 // const ENDPOINT = "http://localhost:5000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
@@ -22,10 +22,14 @@ var selectedChatCompare;
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [newMessage, setNewMessage] = useState("");
+  const [newMessage, setNewMessage] = useState({
+    content: "",
+    contentType: "",
+  });
   const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
   const [istyping, setIsTyping] = useState(false);
+  const [picLoading, setPicLoading] = useState(false);
   const toast = useToast();
 
   const defaultOptions = {
@@ -47,6 +51,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     activeUsers,
   } = ChatState();
   const [pic, setPic] = useState("");
+  const [uploadimg, setUploadImg] = useState("");
   const [isActive, setIsActive] = useState(false);
   const fetchMessages = async () => {
     if (!selectedChat) return;
@@ -81,7 +86,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   };
 
   const sendMessage = async (event) => {
-    if (event.key === "Enter" && newMessage) {
+    if ((event === "send" || event?.key === "Enter") && newMessage?.content) {
       socket.emit("stop typing", selectedChat?._id);
       try {
         const config = {
@@ -90,16 +95,15 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             Authorization: `Bearer ${user.token}`,
           },
         };
-        const { data } = await axios.post(
-          "/api/message",
-          {
-            content: newMessage,
-            chatId: selectedChat,
-          },
-          config
-        );
+        const apiData = {
+          content: newMessage?.content,
+          chatId: selectedChat,
+          contentType: newMessage?.contentType,
+        };
+        const { data } = await axios.post("/api/message", apiData, config);
         socket.emit("new message", data);
-        setNewMessage("");
+        setNewMessage({ contentType: "", content: "" });
+        setUploadImg("");
         setMessages([...messages, data]);
       } catch (error) {
         toast({
@@ -128,19 +132,20 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   //logic to set profile pic of chat
   useEffect(() => {
     fetchMessages();
-
-    selectedChatCompare = selectedChat;
-    const reciever =
-      selectedChat?.users[0]._id === user?._id
-        ? selectedChat?.users[1]
-        : selectedChat?.users[0];
-    setPic(
-      selectedChat && selectedChat?.isGroupChat
-        ? selectedChat?.groupIcon
-        : reciever?.pic
-    );
-    setIsActive(activeUsers?.includes(reciever?._id));
-    // eslint-disable-next-line
+    if (selectedChat) {
+      selectedChatCompare = selectedChat;
+      const reciever =
+        selectedChat && selectedChat?.users[0]._id === user?._id
+          ? selectedChat?.users[1]
+          : selectedChat?.users[0];
+      setPic(
+        selectedChat && selectedChat?.isGroupChat
+          ? selectedChat?.groupIcon
+          : reciever?.pic
+      );
+      setIsActive(activeUsers?.includes(reciever?._id));
+      // eslint-disable-next-line
+    }
   }, [selectedChat]);
   useEffect(() => {
     socket.on("message recieved", (newMessageRecieved) => {
@@ -157,9 +162,13 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       }
     });
   });
-
+  useEffect(() => {
+    if (uploadimg) {
+      setNewMessage({ content: uploadimg, contentType: "img" });
+    }
+  }, [uploadimg]);
   const typingHandler = (e) => {
-    setNewMessage(e.target.value);
+    setNewMessage({ content: e.target.value, contentType: "message" });
 
     if (!socketConnected) return;
 
@@ -179,6 +188,47 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     }, timerLength);
   };
 
+  const postDetails = (pics) => {
+    setPicLoading(true);
+    if (pics === undefined) {
+      toast({
+        title: "Please Select an Image!",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
+    if (pics.type === "image/jpeg" || pics.type === "image/png") {
+      const data = new FormData();
+      data.append("file", pics);
+      data.append("upload_preset", "chat-app");
+      data.append("cloud_name", "piyushproj");
+      fetch("https://api.cloudinary.com/v1_1/piyushproj/image/upload", {
+        method: "post",
+        body: data,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setUploadImg(data.url.toString());
+          setPicLoading(false);
+        })
+        .catch((err) => {
+          setPicLoading(false);
+        });
+    } else {
+      toast({
+        title: "Please Select an Image!",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setPicLoading(false);
+      return;
+    }
+  };
   return (
     <>
       {selectedChat ? (
@@ -243,7 +293,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             borderRadius="lg"
             overflowY="hidden"
           >
-            {loading ? (
+            {loading || picLoading ? (
               <Spinner
                 size="xl"
                 w={20}
@@ -275,15 +325,64 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
               ) : (
                 <></>
               )}
-              <Input
-                variant="filled"
-                // bg="#E0E0E0"
-                bg="#EDF2F7"
-                placeholder="Enter a message.."
-                value={newMessage}
-                onChange={typingHandler}
-                autoFocus={true}
-              />
+              {uploadimg && (
+                <img
+                  src={uploadimg}
+                  style={{
+                    width: "calc(100% - 40px)",
+                    marginLeft: "40px",
+                  }}
+                />
+              )}
+              <Box d={"flex"}>
+                <label htmlfor="file">
+                  <img
+                    src={imageUploadIcon}
+                    alt="image upload icon"
+                    style={{
+                      height: "40px",
+                      width: "40px",
+                      marginRight: "10px",
+                    }}
+                  />
+                  <input
+                    type="file"
+                    id="file"
+                    style={{ display: "none" }}
+                    name="image"
+                    accept="image/gif,image/jpeg,image/jpg,image/png"
+                    multiple=""
+                    data-original-title="upload photos"
+                    onChange={(e) => {
+                      postDetails(e.target.files[0]);
+                      // setUploadImg(e.target.files[0]);
+                    }}
+                  ></input>
+                </label>
+                <Input
+                  variant="filled"
+                  bg="#EDF2F7"
+                  placeholder="Enter a message.."
+                  value={
+                    newMessage.contentType === "message"
+                      ? newMessage.content
+                      : ""
+                  }
+                  onChange={typingHandler}
+                  autoFocus={true}
+                  disabled={uploadimg}
+                />
+                <img
+                  src={sendMessageIcon}
+                  alt="Send Message Icon"
+                  style={{
+                    height: "40px",
+                    width: "40px",
+                    padding: "5px",
+                  }}
+                  onClick={() => sendMessage("send")}
+                />
+              </Box>
             </FormControl>
           </Box>
         </>

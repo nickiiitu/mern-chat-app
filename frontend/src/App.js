@@ -6,25 +6,27 @@ import { useEffect } from "react";
 import { ChatState } from "./Context/ChatProvider";
 
 function App() {
-  const { socket, user } = ChatState();
-  useEffect(() => {
-    // Add event listener for beforeunload event
-    console.log("unload1");
-    const handleUnload = (e) => {
-      // Emit a socket event before the tab is closed
-      // e.preventDefault();
-      console.log("unload");
-      socket.emit("leave", user);
-      return (e.returnValue = "Are you sure you want to close?");
-    };
+  const { socket, user, io } = ChatState();
+  // useEffect(() => {
+  //   // Add event listener for beforeunload event
+  //   console.log("unload1");
+  //   const handleUnload = (e) => {
+  //     // Emit a socket event before the tab is closed
+  //     e.preventDefault();
+  //     console.log("unload");
+  //     socket.broadcast.emit("leave", user);
+  //     io.emit("leave", user);
+  //   };
 
-    window.addEventListener("beforeunload", handleUnload);
+  //   window.addEventListener("beforeunload", handleUnload);
+  //   window.addEventListener("unload", handleUnload);
 
-    // Cleanup event listener on component unmount
-    // return () => {
-    //   window.removeEventListener("beforeunload", handleUnload);
-    // };
-  }, []);
+  //   // Cleanup event listener on component unmount
+  //   return () => {
+  //     window.removeEventListener("beforeunload", handleUnload);
+  //     window.removeEventListener("unload", handleUnload);
+  //   };
+  // });
   return (
     <div className="App">
       <Route path="/" component={Homepage} exact />
