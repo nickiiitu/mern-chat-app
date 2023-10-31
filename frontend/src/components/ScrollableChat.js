@@ -52,6 +52,7 @@ const ScrollableChat = ({ messages }) => {
                   borderRadius: "20px",
                   padding: "5px 0px",
                   maxWidth: "75%",
+                  height: "50vh",
                 }}
                 src={m.content}
                 alt="image"

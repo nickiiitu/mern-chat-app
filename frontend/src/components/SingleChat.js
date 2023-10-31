@@ -331,6 +331,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                   style={{
                     width: "calc(100% - 40px)",
                     marginLeft: "40px",
+                    height: "50vh",
                   }}
                 />
               )}

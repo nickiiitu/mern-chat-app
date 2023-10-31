@@ -12,6 +12,7 @@ import {
   Input,
   useToast,
   Box,
+  FormLabel,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useState } from "react";
@@ -22,6 +23,7 @@ import UserListItem from "../userAvatar/UserListItem";
 const GroupChatModal = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [groupChatName, setGroupChatName] = useState();
+  const [groupIcon, setgroupIcon] = useState();
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [searchResult, setSearchResult] = useState([]);
@@ -79,7 +81,7 @@ const GroupChatModal = ({ children }) => {
   };
 
   const handleSubmit = async () => {
-    if (!groupChatName || !selectedUsers) {
+    if (!groupChatName || !selectedUsers || !groupIcon) {
       toast({
         title: "Please fill all the feilds",
         status: "warning",
@@ -101,6 +103,7 @@ const GroupChatModal = ({ children }) => {
         {
           name: groupChatName,
           users: JSON.stringify(selectedUsers.map((u) => u._id)),
+          groupIcon,
         },
         config
       );
@@ -124,7 +127,42 @@ const GroupChatModal = ({ children }) => {
       });
     }
   };
-
+  const postDetails = (pics) => {
+    if (pics === undefined) {
+      toast({
+        title: "Please Select an Image!",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
+    if (pics.type === "image/jpeg" || pics.type === "image/png") {
+      const data = new FormData();
+      data.append("file", pics);
+      data.append("upload_preset", "chat-app");
+      data.append("cloud_name", "piyushproj");
+      fetch("https://api.cloudinary.com/v1_1/piyushproj/image/upload", {
+        method: "post",
+        body: data,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setgroupIcon(data.url.toString());
+        })
+        .catch((err) => {});
+    } else {
+      toast({
+        title: "Please Select an Image!",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
+  };
   return (
     <>
       <span onClick={onOpen}>{children}</span>
@@ -154,6 +192,16 @@ const GroupChatModal = ({ children }) => {
                 placeholder="Add Users eg: John, Piyush, Jane"
                 mb={1}
                 onChange={(e) => handleSearch(e.target.value)}
+              />
+            </FormControl>
+            <FormControl id="GroupIcon">
+              <FormLabel>Upload your Picture</FormLabel>
+              <Input
+                p={1.5}
+                mb={1}
+                type="file"
+                accept="image/*"
+                onChange={(e) => postDetails(e.target.files[0])}
               />
             </FormControl>
             <Box w="100%" d="flex" flexWrap="wrap">
