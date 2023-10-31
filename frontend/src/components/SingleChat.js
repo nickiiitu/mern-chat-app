@@ -326,17 +326,25 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 <></>
               )}
               {uploadimg && (
-                <img
-                  src={uploadimg}
+                <div
                   style={{
-                    width: "calc(100% - 40px)",
-                    marginLeft: "40px",
-                    height: "50vh",
+                    display: "flex",
+                    justifyContent: "flex-end",
                   }}
-                />
+                >
+                  <img
+                    src={uploadimg}
+                    style={{
+                      width: "calc(100% - 40px)",
+                      maxWidth: "75%",
+                      marginLeft: "40px",
+                      height: "50vh",
+                    }}
+                  />
+                </div>
               )}
               <Box d={"flex"}>
-                <label htmlfor="file">
+                <label htmlFor="file">
                   <img
                     src={imageUploadIcon}
                     alt="image upload icon"
@@ -365,7 +373,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                   bg="#EDF2F7"
                   placeholder="Enter a message.."
                   value={
-                    newMessage.contentType === "message"
+                    uploadimg
+                      ? "Click on send button to share Image"
+                      : newMessage.contentType === "message"
                       ? newMessage.content
                       : ""
                   }

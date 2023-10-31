@@ -6,7 +6,6 @@ import { useEffect } from "react";
 import { ChatState } from "./Context/ChatProvider";
 
 function App() {
-  const { socket, user, io } = ChatState();
   // useEffect(() => {
   //   // Add event listener for beforeunload event
   //   console.log("unload1");

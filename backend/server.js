@@ -6,12 +6,18 @@ const chatRoutes = require("./routes/chatRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const path = require("path");
+var cors = require("cors");
 
+const app = express();
+app.use(express.json()); // to accept json data
+const corsOptions = {
+  origin: "*",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 dotenv.config();
 connectDB();
-const app = express();
-
-app.use(express.json()); // to accept json data
 
 // app.get("/", (req, res) => {
 //   res.send("API Running!");
@@ -63,11 +69,11 @@ redisConnect();
 const io = require("socket.io")(server, {
   // pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:3000",
-    // credentials: true,
+    origin: "*",
+    credentials: true,
+    methods: ["GET", "POST", "PATCH", "UPDATE", "DELETE"],
   },
 });
-
 io.on("connection", (socket) => {
   console.log("Connected to socket.io");
   socket.on("setup", async (userData) => {

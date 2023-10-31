@@ -60,13 +60,6 @@ function SideDrawer() {
 
   const handleSearch = async () => {
     if (!search) {
-      toast({
-        title: "Please Enter something in search",
-        status: "warning",
-        duration: 5000,
-        isClosable: true,
-        position: "top-left",
-      });
       return;
     }
 
@@ -199,7 +192,15 @@ function SideDrawer() {
                 placeholder="Search by name or email"
                 mr={2}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  handleSearch();
+                }}
+                onKeyDown={(e) => {
+                  if (e?.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
               />
               <Button onClick={handleSearch}>Go</Button>
             </Box>

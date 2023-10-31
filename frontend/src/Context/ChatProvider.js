@@ -3,9 +3,12 @@ import { useHistory } from "react-router-dom";
 import io from "socket.io-client";
 
 const ChatContext = createContext();
-const ENDPOINT = "http://localhost:5000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
+const url = window.location.href.split("/");
+const ENDPOINT = url ? url[0] + "//" + url[2] : "http://localhost:5000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
 var socket;
 const ChatProvider = ({ children }) => {
+  // ENDPOINT = ;
+  // console.log(url);
   const [selectedChat, setSelectedChat] = useState();
   const [user, setUser] = useState();
   const [notification, setNotification] = useState([]);
