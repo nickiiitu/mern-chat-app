@@ -55,17 +55,23 @@ const server = app.listen(
   PORT,
   console.log(`Server running on PORT ${PORT}...`.yellow.bold)
 );
-//redis
+
+//----------------------redis--------------------------
 const redis = require("redis");
 
-const client = redis.createClient();
+const client = redis.createClient({
+  port: process.env.REDIS_PORT,
+  host: process.env.REDIS_HOST,
+  username: process.env.REDIS_USER,
+  password: process.env.REDIS_PASSWORD,
+});
 
 const redisConnect = async () => {
   await client.connect();
 };
 redisConnect();
 
-//socket
+//----------------------------socket--------------------------
 const io = require("socket.io")(server, {
   // pingTimeout: 60000,
   cors: {
