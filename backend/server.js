@@ -60,10 +60,7 @@ const server = app.listen(
 const redis = require("redis");
 
 const client = redis.createClient({
-  port: process.env.REDIS_PORT,
-  host: process.env.REDIS_HOST,
-  username: process.env.REDIS_USER,
-  password: process.env.REDIS_PASSWORD,
+  url: process.env.REDIS_URL,
 });
 
 const redisConnect = async () => {
