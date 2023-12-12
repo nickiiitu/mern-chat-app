@@ -6,16 +6,86 @@ import { useEffect, useState } from "react";
 import { getSender } from "../config/ChatLogics";
 import ChatLoading from "./ChatLoading";
 import GroupChatModal from "./miscellaneous/GroupChatModal";
+import { useDisclosure } from "@chakra-ui/hooks";
+import { Input } from "@chakra-ui/input";
 import { ChatState } from "../Context/ChatProvider";
-import { Button, Flex, Avatar, Center } from "@chakra-ui/react";
+import { Spinner } from "@chakra-ui/spinner";
+import { Button, Flex, Avatar, Center, Tooltip } from "@chakra-ui/react";
+import {
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerHeader,
+  DrawerOverlay,
+} from "@chakra-ui/modal";
+import UserListItem from "./userAvatar/UserListItem";
 const MyChats = ({ fetchAgain }) => {
+  const [searchResult, setSearchResult] = useState([]);
   const [loggedUser, setLoggedUser] = useState();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [loadingChat, setLoadingChat] = useState(false);
 
   const { selectedChat, setSelectedChat, user, chats, setChats, activeUsers } =
     ChatState();
 
   const toast = useToast();
+  const accessChat = async (userId) => {
+    try {
+      setLoadingChat(true);
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      const { data } = await axios.post(`/api/chat`, { userId }, config);
 
+      if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
+      setSelectedChat(data);
+      setLoadingChat(false);
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error fetching the chat",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-left",
+      });
+    }
+  };
+  const handleSearch = async () => {
+    if (!search) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+
+      const { data } = await axios.get(`/api/user?search=${search}`, config);
+
+      setLoading(false);
+      setSearchResult(data);
+    } catch (error) {
+      toast({
+        title: "Error Occured!",
+        description: "Failed to Load the Search Results",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-left",
+      });
+    }
+  };
   const fetchChats = async () => {
     try {
       const config = {
@@ -41,7 +111,6 @@ const MyChats = ({ fetchAgain }) => {
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
-    // eslint-disable-next-line
   }, [fetchAgain]);
   return (
     <Box
@@ -59,21 +128,36 @@ const MyChats = ({ fetchAgain }) => {
         px={3}
         fontSize={{ base: "28px", md: "30px" }}
         fontFamily="Work sans"
-        d="flex"
+        d={{ base: "block", md: "flex", lg: "flex" }}
         w="100%"
         justifyContent="space-between"
         alignItems="center"
       >
-        My Chats
-        <GroupChatModal>
+        <Tooltip label="Search Users to chat" hasArrow placement="bottom-end">
           <Button
-            d="flex"
-            fontSize={{ base: "17px", md: "10px", lg: "17px" }}
-            rightIcon={<AddIcon />}
+            variant="ghost"
+            onClick={onOpen}
+            w={{ base: "100%", md: "49%", lg: "49%" }}
           >
-            New Group Chat
+            <i className="fas fa-search"></i>
+            <Text
+              d={{ md: "flex" }}
+              ps="2"
+              fontSize={{ base: "17px", md: "10px", lg: "12px" }}
+            >
+              Search User
+            </Text>
           </Button>
-        </GroupChatModal>
+        </Tooltip>
+        <Button
+          d="flex"
+          justifyContent="center"
+          fontSize={{ base: "17px", md: "10px", lg: "12px" }}
+          rightIcon={<AddIcon />}
+          w={{ base: "100%", md: "49%", lg: "49%" }}
+        >
+          <GroupChatModal>New Group Chat</GroupChatModal>
+        </Button>
       </Box>
       <Box
         d="flex"
@@ -147,6 +231,43 @@ const MyChats = ({ fetchAgain }) => {
           <ChatLoading />
         )}
       </Box>
+      <Drawer placement="left" onClose={onClose} isOpen={isOpen}>
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerHeader borderBottomWidth="1px">Search Users</DrawerHeader>
+          <DrawerBody>
+            <Box d="flex" pb={2}>
+              <Input
+                placeholder="Search by name or email"
+                mr={2}
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  handleSearch();
+                }}
+                onKeyDown={(e) => {
+                  if (e?.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+              />
+              <Button onClick={handleSearch}>Go</Button>
+            </Box>
+            {loading ? (
+              <ChatLoading />
+            ) : (
+              searchResult?.map((user) => (
+                <UserListItem
+                  key={user._id}
+                  user={user}
+                  handleFunction={() => accessChat(user._id)}
+                />
+              ))
+            )}
+            {loadingChat && <Spinner ml="auto" d="flex" />}
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
     </Box>
   );
 };
