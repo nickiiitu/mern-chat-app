@@ -246,23 +246,26 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             bg="white"
             borderRadius="lg"
           >
-            {pic && (
-              <Avatar
-                h="43px"
-                w="43px"
-                cursor="pointer"
-                src={pic}
-                border={
-                  selectedChat?.isGroupChat ? "0px" : isActive ? "2px" : "0px"
-                }
-                borderColor={isActive ? "#00A300 !important" : "white"}
+            <div style={{ display: "flex" }}>
+              <IconButton
+                marginEnd={1}
+                d={{ base: "flex", md: "none" }}
+                icon={<ArrowBackIcon />}
+                onClick={() => setSelectedChat("")}
               />
-            )}
-            <IconButton
-              d={{ base: "flex", md: "none" }}
-              icon={<ArrowBackIcon />}
-              onClick={() => setSelectedChat("")}
-            />
+              {pic && (
+                <Avatar
+                  h="42px"
+                  w="43px"
+                  cursor="pointer"
+                  src={pic}
+                  border={
+                    selectedChat?.isGroupChat ? "0px" : isActive ? "2px" : "0px"
+                  }
+                  borderColor={isActive ? "#00A300 !important" : "white"}
+                />
+              )}
+            </div>
             {messages &&
               (!selectedChat?.isGroupChat ? (
                 <>
