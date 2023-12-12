@@ -58,10 +58,6 @@ const server = app.listen(
 
 //----------------------redis--------------------------
 const redis = require("redis");
-console.log(process.env.REDIS_PORT);
-console.log(process.env.REDIS_HOST);
-console.log(process.env.REDIS_USER);
-console.log(process.env.REDIS_PASSWORD);
 const client = redis.createClient({
   url: process.env.REDIS_URL,
 });
